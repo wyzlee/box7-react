@@ -4,6 +4,8 @@ const config = {
     API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000',
     // URL de base pour les WebSockets
     WS_BASE_URL: process.env.REACT_APP_WS_BASE_URL || 'ws://localhost:8000',
+    // Ajouter l'information de domaine
+    API_DOMAIN: process.env.REACT_APP_API_DOMAIN || 'localhost',
 };
 
 export default config;

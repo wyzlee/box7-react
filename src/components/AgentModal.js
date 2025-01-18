@@ -16,6 +16,24 @@ const AgentModal = ({ show, onHide, onAdd, onUpdate, onDelete, onSave, selectedN
   const [selectedFile, setSelectedFile] = useState('');
 
   useEffect(() => {
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      console.log('Request:', args[0], args[1]);
+      const response = await originalFetch(...args);
+      console.log('Response:', {
+        url: response.url,
+        status: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        cookies: document.cookie
+      });
+      return response;
+    };
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+  
+  useEffect(() => {
     const fetchFiles = async () => {
       if (show) {
         try {
@@ -25,7 +43,7 @@ const AgentModal = ({ show, onHide, onAdd, onUpdate, onDelete, onSave, selectedN
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
-            },
+            }
           });
   
           // Vérifier d'abord si la réponse est ok

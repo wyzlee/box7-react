@@ -1,11 +1,17 @@
-// Configuration de l'application
 const config = {
-    // URL de base de l'API. Par défaut en local, peut être surchargée par une variable d'environnement
     API_BASE_URL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000',
-    // URL de base pour les WebSockets
     WS_BASE_URL: process.env.REACT_APP_WS_BASE_URL || 'ws://localhost:8000',
-    // Ajouter l'information de domaine
-    API_DOMAIN: process.env.REACT_APP_API_DOMAIN || 'localhost',
+    DEBUG: process.env.NODE_ENV !== 'production',
+    logRequests: true,  // Activer/désactiver les logs de requêtes
+    logAuth: true,      // Activer/désactiver les logs d'authentification
+};
+
+// Helper pour les logs
+config.log = (type, ...args) => {
+    if (config.DEBUG && ((type === 'request' && config.logRequests) || 
+                        (type === 'auth' && config.logAuth))) {
+        console.log(`[${type.toUpperCase()}]`, ...args);
+    }
 };
 
 export default config;

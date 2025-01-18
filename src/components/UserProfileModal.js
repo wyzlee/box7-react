@@ -66,20 +66,37 @@ const UserProfileModal = ({ show, onHide, user, onLogout, onLLMChange }) => {
     }
   }, [fetchOptions]);
 
+  // Dans loadUserFiles
   const loadUserFiles = useCallback(async () => {
     try {
+      console.log('Loading user files...', {
+        url: `${config.API_BASE_URL}/designer/get_user_files`,
+        cookies: document.cookie,
+        headers: fetchOptions()
+      });
+
       const response = await fetch(`${config.API_BASE_URL}/designer/get_user_files`, {
         ...fetchOptions(),
         method: 'GET',
       });
+
+      console.log('User files response:', {
+        status: response.status,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries()),
+        cookies: document.cookie
+      });
+
       if (response.ok) {
         const data = await response.json();
-        // Vérifier les résumés existants pour chaque fichier
         const filesWithSummaryStatus = await Promise.all(data.map(async (file) => {
-          const summaryResponse = await fetch(`${config.API_BASE_URL}/designer/get_summary_file/${encodeURIComponent(file.name)}`, {
-            ...fetchOptions(),
-            method: 'GET',
-          });
+          const summaryResponse = await fetch(
+            `${config.API_BASE_URL}/designer/get_summary_file/${encodeURIComponent(file.name)}`,
+            {
+              ...fetchOptions(),
+              method: 'GET',
+            }
+          );
           if (summaryResponse.ok) {
             const summaryData = await summaryResponse.json();
             return { ...file, has_summary: summaryData?.has_summary || false };
@@ -88,10 +105,11 @@ const UserProfileModal = ({ show, onHide, user, onLogout, onLLMChange }) => {
         }));
         setFiles(filesWithSummaryStatus);
       } else {
+        console.error('User files error:', await response.text());
         setError('Erreur lors du chargement des fichiers');
       }
     } catch (err) {
-      console.error('Erreur lors du chargement des fichiers:', err);
+      console.error('User files error:', err);
       setError('Erreur lors du chargement des fichiers');
     }
   }, [fetchOptions]);
@@ -324,6 +342,28 @@ const UserProfileModal = ({ show, onHide, user, onLogout, onLLMChange }) => {
     }
   };
 
+  const handleLoginSuccess = (data) => {
+    console.log('Login success:', {
+      data,
+      cookies: document.cookie,
+    });
+    
+    if (data.authenticated && data.user) {
+      setIsAuthenticated(true);
+      setUser(data.user);
+  
+      // Log l'état après la mise à jour
+      setTimeout(() => {
+        console.log('Post-login state:', {
+          isAuthenticated: true,
+          user: data.user,
+          cookies: document.cookie
+        });
+      }, 100);
+    }
+    setShowLoginModal(false);
+  };
+  
   return (
     <Modal show={show} onHide={onHide} size="lg">
       <Modal.Header closeButton>

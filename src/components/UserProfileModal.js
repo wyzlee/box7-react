@@ -10,7 +10,16 @@ import Table from 'react-bootstrap/Table';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import config from '../config';
 
-const UserProfileModal = ({ show, onHide, user, onLogout, onLLMChange }) => {
+const UserProfileModal = ({ 
+    show, 
+    onHide, 
+    user, 
+    onLogout, 
+    onLLMChange,
+    setIsAuthenticated,  // Ajoutez ces nouvelles props
+    setUser,
+    setShowLoginModal
+  }) => {
   const [files, setFiles] = useState([]);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -215,10 +224,14 @@ const UserProfileModal = ({ show, onHide, user, onLogout, onLLMChange }) => {
       });
 
       if (response.ok) {
+        setIsAuthenticated(false);
+        setUser(null);
         onLogout();
       }
     } catch (err) {
       console.error('Erreur lors de la déconnexion:', err);
+    } finally {
+      setShowLoginModal(false);
     }
   };
 

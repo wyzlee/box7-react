@@ -16,23 +16,39 @@ const AgentModal = ({ show, onHide, onAdd, onUpdate, onDelete, onSave, selectedN
   const [selectedFile, setSelectedFile] = useState('');
 
   useEffect(() => {
-    if (show) {
-      // Charger la liste des fichiers de l'utilisateur
-      fetch(`${config.API_BASE_URL}/designer/get_user_files/`, {
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      })
-        .then(response => response.json())
-        .then(data => {
+    const fetchFiles = async () => {
+      if (show) {
+        try {
+          const response = await fetch(`${config.API_BASE_URL}/designer/get_user_files/`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+          });
+  
+          // Vérifier d'abord si la réponse est ok
+          if (!response.ok) {
+            // Si non autorisé, probablement session expirée
+            if (response.status === 401) {
+              setSharePointFiles({ files: [] });
+              throw new Error('Session expirée ou non autorisé');
+            }
+            throw new Error(`Erreur HTTP: ${response.status}`);
+          }
+  
+          const data = await response.json();
           setSharePointFiles({ files: data });
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('Erreur lors du chargement des fichiers:', error);
-        });
-    }
+          // Initialiser avec un tableau vide en cas d'erreur
+          setSharePointFiles({ files: [] });
+        }
+      }
+    };
+  
+    fetchFiles();
   }, [show]);
 
   useEffect(() => {
